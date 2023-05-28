@@ -6,6 +6,7 @@
 #include <tlhelp32.h>
 #include "getopt.h"
 #include <string>
+#include "ErrorUtils.h"
 
 #include "ntstatus.h"
 
@@ -526,8 +527,13 @@ DWORD  GetPIDForProcess(wchar_t* process)
 	if (!hSnapshot) {
 		return 0;
 	}
-	pe32.dwSize = sizeof(PROCESSENTRY32);
-	for (working = Process32FirstW(hSnapshot, &pe32); working; working = Process32NextW(hSnapshot, &pe32))
+	pe32.dwSize = sizeof(PROCESSENTRY32W);
+	working = Process32FirstW(hSnapshot, &pe32);
+	if(!working){
+		ErrorUtils::PrintLastError();
+		return 0;
+	}
+	for (; working; working = Process32NextW(hSnapshot, &pe32))
 	{
 		if (!wcscmp(pe32.szExeFile, process))
 		{
